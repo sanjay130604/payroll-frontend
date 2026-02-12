@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Papa from "papaparse";
 import axios from "../utils/axiosConfig";
-import AdminNavbar from "../components/AdminNavbar";
+
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, CheckCircle, AlertCircle, FileDown, ArrowRight, XCircle, AlertTriangle } from "lucide-react";
 
@@ -264,7 +264,7 @@ export default function ProfileBulkUpload() {
 
     return (
         <div className="min-h-screen bg-slate-50 animate-in fade-in duration-500">
-            <AdminNavbar />
+
 
             <div className="max-w-7xl mx-auto px-6 py-12">
 

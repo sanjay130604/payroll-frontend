@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "../utils/axiosConfig";
-import AdminNavbar from "../components/AdminNavbar";
+
 import { motion } from "framer-motion";
 import { Trash2, AlertTriangle, Search } from "lucide-react";
 
@@ -31,7 +31,7 @@ export default function DeleteUser() {
 
   return (
     <div className="min-h-screen bg-slate-50 animate-in fade-in duration-500">
-      <AdminNavbar />
+
 
       <div className="max-w-7xl mx-auto px-6 py-12">
         <motion.div

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "../utils/axiosConfig";
-import AdminNavbar from "../components/AdminNavbar";
+
 import ProfileModal from "../components/ProfileModal";
 import { motion } from "framer-motion";
 import { Upload, User, MapPin, Phone, Briefcase } from "lucide-react";
@@ -54,7 +54,7 @@ export default function ProfileManagement() {
 
   return (
     <div className="min-h-screen bg-slate-50 animate-in fade-in duration-500">
-      <AdminNavbar />
+
 
       <div className="max-w-7xl mx-auto px-6 py-10">
 

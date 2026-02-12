@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import { Calendar, Bell, ChevronDown } from "lucide-react";
+import { Calendar, Bell, ChevronDown, Menu } from "lucide-react";
 
-export default function Topbar() {
+export default function Topbar({ setMobileMenuOpen }) {
   const navigate = useNavigate();
   const today = new Date().toLocaleDateString("en-IN", {
     day: "numeric",
@@ -11,20 +11,29 @@ export default function Topbar() {
 
   return (
     <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm transition-all duration-300">
-      <div className="px-8 py-4 flex justify-between items-center">
+      <div className="px-6 py-4 flex justify-between items-center">
 
         {/* ================= LEFT ================= */}
-        <div className="flex flex-col">
-          <h1 className="text-xl font-bold text-slate-800 tracking-tight">
-            Payroll Management
-          </h1>
-          <p className="text-sm font-medium text-slate-500 mt-0.5">
-            View & manage employee salary details
-          </p>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => setMobileMenuOpen(true)}
+            className="md:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors"
+          >
+            <Menu size={24} />
+          </button>
+
+          <div className="flex flex-col">
+            <h1 className="text-xl font-bold text-slate-800 tracking-tight">
+              Payroll Management
+            </h1>
+            <p className="text-sm font-medium text-slate-500 mt-0.5 hidden sm:block">
+              View & manage employee salary details
+            </p>
+          </div>
         </div>
 
         {/* ================= RIGHT ================= */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4 md:gap-6">
 
           {/* DATE CHIP */}
           <div className="hidden md:flex items-center gap-2.5 px-4 py-2 rounded-full bg-slate-50 border border-slate-100 text-slate-600 text-sm font-semibold shadow-sm hover:shadow-md transition-all duration-300">
@@ -57,7 +66,7 @@ export default function Topbar() {
                 Account Settings
               </p>
             </div>
-            
+
             <ChevronDown size={16} className="text-slate-300 group-hover:text-primary-500 transition-colors hidden md:block" />
           </div>
 

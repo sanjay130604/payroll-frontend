@@ -10,10 +10,10 @@
 
 // //       {/* HERO SECTION */}
 // //       <section className="relative flex items-center justify-center px-10 py-24">
-        
+
 // //         {/* CONTENT WRAPPER */}
 // //         <div className="relative z-10 max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          
+
 // //           {/* LEFT CONTENT */}
 // //           <div className="backdrop-blur-xl bg-white/70 border border-white/40 shadow-2xl rounded-3xl p-12">
 // //             <h2 className="text-5xl font-extrabold text-gray-900 mb-6">
@@ -94,7 +94,7 @@
 //   );
 // }
 
-import AdminNavbar from "../components/AdminNavbar";
+
 import { motion } from "framer-motion";
 import { Users, DollarSign, Activity, ShieldCheck, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -104,35 +104,35 @@ export default function AdminPanel() {
 
   return (
     <div className="min-h-screen bg-slate-50 animate-in fade-in duration-500">
-      <AdminNavbar />
+
 
       {/* HERO SECTION */}
       <section className="px-6 py-12 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
-          
+
           <div className="space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200 text-slate-700 text-xs font-semibold uppercase tracking-wider">
               <ShieldCheck size={14} />
               Admin Control Center
             </div>
-            
+
             <h1 className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight">
               Manage your Organization with <span className="text-primary-600">Precision</span>
             </h1>
-            
+
             <p className="text-lg text-slate-600 leading-relaxed max-w-xl">
               Welcome to the centralized administration hub. Monitor user activity, manage payrolls, and oversee system operations from one secure dashboard.
             </p>
 
             <div className="flex gap-4">
-              <button 
+              <button
                 onClick={() => navigate("/admin/user-management/account")}
                 className="px-6 py-3 bg-slate-900 text-white font-medium rounded-xl hover:bg-slate-800 transition-all flex items-center gap-2"
               >
                 Manage Users
                 <ArrowRight size={18} />
               </button>
-              <button 
+              <button
                 onClick={() => navigate("/admin/financial-management")}
                 className="px-6 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-all"
               >
@@ -162,23 +162,23 @@ export default function AdminPanel() {
 
         {/* QUICK STATS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <StatCard 
-            title="Total Users" 
-            value="150+" 
+          <StatCard
+            title="Total Users"
+            value="150+"
             desc="Active Employees"
-            icon={<Users className="text-blue-500" size={24} />} 
+            icon={<Users className="text-blue-500" size={24} />}
           />
-          <StatCard 
-            title="Payroll Processed" 
-            value="₹45L+" 
+          <StatCard
+            title="Payroll Processed"
+            value="₹45L+"
             desc="This Month"
-            icon={<DollarSign className="text-emerald-500" size={24} />} 
+            icon={<DollarSign className="text-emerald-500" size={24} />}
           />
-          <StatCard 
-            title="System Status" 
-            value="99.9%" 
+          <StatCard
+            title="System Status"
+            value="99.9%"
             desc="Uptime Reliability"
-            icon={<Activity className="text-orange-500" size={24} />} 
+            icon={<Activity className="text-orange-500" size={24} />}
           />
         </div>
       </section>

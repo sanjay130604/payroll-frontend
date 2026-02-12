@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios, { BASE_URL } from "../utils/axiosConfig";
-import AdminNavbar from "../components/AdminNavbar";
+
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Save, Trash2, Edit2, Plus, Download, Upload, UserCog } from "lucide-react";
@@ -59,7 +59,7 @@ export default function EditUser() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <AdminNavbar />
+
 
       <div className="max-w-7xl mx-auto px-6 py-10">
         <motion.div className="bg-white rounded-2xl shadow border overflow-hidden">

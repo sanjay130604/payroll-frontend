@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "../utils/axiosConfig";
 import { useNavigate } from "react-router-dom";
-import AdminNavbar from "../components/AdminNavbar";
+
 import { Plus, Upload, Search, FileText, Edit, Eye, Filter, X } from "lucide-react";
 
 /* ================= CONSTANTS ================= */
@@ -134,76 +134,76 @@ function CreatePayrollModal({ open, onClose }) {
   // };
 
   const submit = async () => {
-  const isNum = (v) => v !== "" && v !== null && !isNaN(v);
-  const alphanumericRegex = /^[A-Z0-9]+$/i;
+    const isNum = (v) => v !== "" && v !== null && !isNaN(v);
+    const alphanumericRegex = /^[A-Z0-9]+$/i;
 
-  if (!/^\d{4}-\d{2}$/.test(form.salaryMonth)) {
-    alert("Salary Month must be YYYY-MM");
-    return;
-  }
-
-  if (!String(form.email).toLowerCase().endsWith("@gmail.com")) {
-    alert("Employee Email must be @gmail.com");
-    return;
-  }
-
-  if (!String(form.employeeId).toUpperCase().startsWith("EMP")) {
-    alert("Employee ID must start with EMP");
-    return;
-  }
-
-  if ((form.firstName || "").trim().length < 2) {
-    alert("First Name must be at least 2 letters");
-    return;
-  }
-
-  if ((form.lastName || "").trim().length < 1) {
-    alert("Last Name must be at least 1 letter");
-    return;
-  }
-
-  if (!form.dateOfJoining) {
-    alert("Date of Joining is required");
-    return;
-  }
-
-  if (!isNum(form.workingDays)) return alert("Working Days must be a number");
-  if (!isNum(form.paidDays)) return alert("Paid Days must be a number");
-  if (!isNum(form.lopDays)) return alert("LOP Days must be a number");
-  if (!isNum(form.leavesAvailed)) return alert("Leaves Availed must be a number");
-  if (!isNum(form.leavesUsed)) return alert("Leaves Used must be a number");
-  if (!isNum(form.totalLeaves)) return alert("Total Leaves must be a number");
-  if (!isNum(form.remainingPaidLeaves)) return alert("Balance Leaves must be a number");
-
-  if (!isNum(form.basic)) return alert("Basic Salary must be a number");
-  if (!isNum(form.hra)) return alert("HRA must be a number");
-  if (!isNum(form.otherAllowance)) return alert("Other Allowance must be a number");
-  if (!isNum(form.specialPay)) return alert("Special Pay must be a number");
-  if (!isNum(form.incentive)) return alert("Incentive must be a number");
-  if (!isNum(form.tds)) return alert("TDS must be a number");
-  if (!isNum(form.otherDeductions)) return alert("Other Deductions must be a number");
-
-  const pan = (form.panCard || "").trim();
-  if (pan.length !== 10 || !alphanumericRegex.test(pan)) {
-    alert("PAN Card must be exactly 10 alphanumeric characters");
-    return;
-  }
-
-  try {
-    const res = await axios.post("/api/finance/create", form);
-
-    if (res.data?.success) {
-      alert("Payroll created successfully");
-      onClose();
-      window.location.reload();
-    } else {
-      alert(res.data?.message || "Creation failed");
+    if (!/^\d{4}-\d{2}$/.test(form.salaryMonth)) {
+      alert("Salary Month must be YYYY-MM");
+      return;
     }
-  } catch (err) {
-    console.error(err);
-    alert(err.response?.data?.message || "Create payroll failed");
-  }
-};
+
+    if (!String(form.email).toLowerCase().endsWith("@gmail.com")) {
+      alert("Employee Email must be @gmail.com");
+      return;
+    }
+
+    if (!String(form.employeeId).toUpperCase().startsWith("EMP")) {
+      alert("Employee ID must start with EMP");
+      return;
+    }
+
+    if ((form.firstName || "").trim().length < 2) {
+      alert("First Name must be at least 2 letters");
+      return;
+    }
+
+    if ((form.lastName || "").trim().length < 1) {
+      alert("Last Name must be at least 1 letter");
+      return;
+    }
+
+    if (!form.dateOfJoining) {
+      alert("Date of Joining is required");
+      return;
+    }
+
+    if (!isNum(form.workingDays)) return alert("Working Days must be a number");
+    if (!isNum(form.paidDays)) return alert("Paid Days must be a number");
+    if (!isNum(form.lopDays)) return alert("LOP Days must be a number");
+    if (!isNum(form.leavesAvailed)) return alert("Leaves Availed must be a number");
+    if (!isNum(form.leavesUsed)) return alert("Leaves Used must be a number");
+    if (!isNum(form.totalLeaves)) return alert("Total Leaves must be a number");
+    if (!isNum(form.remainingPaidLeaves)) return alert("Balance Leaves must be a number");
+
+    if (!isNum(form.basic)) return alert("Basic Salary must be a number");
+    if (!isNum(form.hra)) return alert("HRA must be a number");
+    if (!isNum(form.otherAllowance)) return alert("Other Allowance must be a number");
+    if (!isNum(form.specialPay)) return alert("Special Pay must be a number");
+    if (!isNum(form.incentive)) return alert("Incentive must be a number");
+    if (!isNum(form.tds)) return alert("TDS must be a number");
+    if (!isNum(form.otherDeductions)) return alert("Other Deductions must be a number");
+
+    const pan = (form.panCard || "").trim();
+    if (pan.length !== 10 || !alphanumericRegex.test(pan)) {
+      alert("PAN Card must be exactly 10 alphanumeric characters");
+      return;
+    }
+
+    try {
+      const res = await axios.post("/api/finance/create", form);
+
+      if (res.data?.success) {
+        alert("Payroll created successfully");
+        onClose();
+        window.location.reload();
+      } else {
+        alert(res.data?.message || "Creation failed");
+      }
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || "Create payroll failed");
+    }
+  };
 
 
   //     if (res.data.success) {
@@ -374,24 +374,24 @@ export default function FinancialManagement() {
   // }, []);
 
   useEffect(() => {
-  const loadDropdowns = async () => {
-    try {
-      const res = await axios.get("/api/finance/dropdowns");
+    const loadDropdowns = async () => {
+      try {
+        const res = await axios.get("/api/finance/dropdowns");
 
-      if (res.data?.success) {
-        setDropdowns({
-          firstNames: res.data.firstNames || [],
-          lastNames: res.data.lastNames || [],
-          emails: res.data.emails || []
-        });
+        if (res.data?.success) {
+          setDropdowns({
+            firstNames: res.data.firstNames || [],
+            lastNames: res.data.lastNames || [],
+            emails: res.data.emails || []
+          });
+        }
+      } catch (err) {
+        console.error("Dropdown load error", err);
       }
-    } catch (err) {
-      console.error("Dropdown load error", err);
-    }
-  };
+    };
 
-  loadDropdowns();
-}, []);
+    loadDropdowns();
+  }, []);
 
 
   // const search = async () => {
@@ -412,37 +412,37 @@ export default function FinancialManagement() {
   // };
 
   const search = async () => {
-  setLoading(true);
-  setList([]);
-
-  try {
-    const payload = {
-      year: Number(filters.year),
-      month: filters.month,
-      firstName: filters.firstName || "",
-      lastName: filters.lastName || "",
-      email: filters.email || ""
-    };
-
-    const res = await axios.post("/api/finance/search", payload);
-
-    if (res.data?.success) {
-      setList(res.data.list || []);
-    } else {
-      setList([]);
-    }
-  } catch (err) {
-    console.error("Search error", err);
+    setLoading(true);
     setList([]);
-  } finally {
-    setLoading(false);
-  }
-};
+
+    try {
+      const payload = {
+        year: Number(filters.year),
+        month: filters.month,
+        firstName: filters.firstName || "",
+        lastName: filters.lastName || "",
+        email: filters.email || ""
+      };
+
+      const res = await axios.post("/api/finance/search", payload);
+
+      if (res.data?.success) {
+        setList(res.data.list || []);
+      } else {
+        setList([]);
+      }
+    } catch (err) {
+      console.error("Search error", err);
+      setList([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   return (
     <div className="min-h-screen bg-slate-50 animate-in fade-in duration-500">
-      <AdminNavbar />
+
 
       <div className="max-w-7xl mx-auto px-6 py-10">
 

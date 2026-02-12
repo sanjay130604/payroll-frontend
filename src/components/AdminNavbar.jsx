@@ -28,7 +28,7 @@
 
 //   return (
 //     <nav className="flex items-center justify-between px-10 py-4 bg-white shadow">
-      
+
 //       {/* LEFT */}
 //       <div className="flex items-center gap-4">
 //         <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden">
@@ -62,12 +62,11 @@
 // }
 
 import { useEffect, useState } from "react";
-import { useNavigate, useOutletContext } from "react-router-dom";
-import { Menu, LogOut, Clock, MapPin } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Menu, LogOut, Clock } from "lucide-react";
 
-export default function AdminNavbar() {
+export default function AdminNavbar({ setOpen }) {
   const navigate = useNavigate();
-  const { setOpen } = useOutletContext() || {};
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
@@ -76,8 +75,8 @@ export default function AdminNavbar() {
   }, []);
 
   return (
-    <nav className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-100">
-      
+    <nav className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-100 sticky top-0 z-30">
+
       {/* LEFT */}
       <div className="flex items-center gap-4">
         {/* MOBILE MENU */}
@@ -100,7 +99,7 @@ export default function AdminNavbar() {
 
       {/* RIGHT */}
       <div className="flex items-center gap-6">
-        
+
         {/* TIME WIDGET */}
         <div className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full bg-slate-50 text-slate-600 text-sm font-medium border border-slate-100">
           <Clock size={16} className="text-slate-400" />
