@@ -1,0 +1,216 @@
+import { useEffect, useState } from "react";
+import axios from "../utils/axiosConfig";
+import { useParams, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { ArrowLeft, Save, Calendar, User, CreditCard } from "lucide-react";
+
+export default function EmployeeFinancialDetails() {
+  const { email, month } = useParams();
+  const navigate = useNavigate();
+
+  const [data, setData] = useState(null);
+  const [row, setRow] = useState(null);
+
+  /* ================= LOAD ================= */
+  useEffect(() => {
+    if (email && month) load();
+  }, [email, month]);
+
+  const load = async () => {
+    try {
+      const res = await axios.post("/api/finance/get", {
+        email: decodeURIComponent(email), // ✅ IMPORTANT
+        salaryMonth: month
+      });
+
+      if (!res.data.success) {
+        alert("Payroll not found");
+        navigate(-1);
+        return;
+      }
+
+      const f = { ...res.data.finance };
+
+      // Date formatting for input[type=date]
+      if (f.dateOfJoining) {
+        const d = new Date(f.dateOfJoining);
+        if (!isNaN(d)) f.dateOfJoining = d.toISOString().split("T")[0];
+      }
+
+      // Convert all fields to string for inputs
+      Object.keys(f).forEach(k => {
+        if (f[k] === null || f[k] === undefined) f[k] = "";
+        else f[k] = String(f[k]);
+      });
+
+      setData(f);
+      setRow(res.data.row); // ✅ REQUIRED
+    } catch (err) {
+      console.error(err);
+      alert("Failed to load payroll");
+      navigate(-1);
+    }
+  };
+
+  /* ================= SAVE ================= */
+  const save = async () => {
+    try {
+      if (!row) {
+        alert("Invalid payroll row");
+        return;
+      }
+
+      const payload = { ...data };
+
+      // Numeric fields conversion
+      [
+        "workingDays",
+        "paidDays",
+        "lopDays",
+        "totalLeaves",
+        "leavesAvailed",
+        "leavesUsed",
+        "remainingPaidLeaves",
+        "basic",
+        "hra",
+        "otherAllowance",
+        "specialPay",
+        "incentive",
+        "tds",
+        "otherDeductions"
+      ].forEach(k => {
+        payload[k] = Number(payload[k] || 0);
+      });
+
+      const res = await axios.post("/api/finance/update", {
+        row,
+        ...payload
+      });
+
+      if (res.data.success) {
+        alert("Payroll updated successfully");
+        navigate(-1);
+      } else {
+        alert(res.data.message || "Update failed in Google Sheet");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Update failed");
+    }
+  };
+
+  /* ================= FIELD ================= */
+  const Field = ({ label, keyName, type = "text", editable = true }) => (
+    <div>
+      <label className="block text-xs font-bold text-slate-400 uppercase mb-1">
+        {label}
+      </label>
+      <input
+        type={type}
+        readOnly={!editable}
+        value={data[keyName] || ""}
+        onChange={e =>
+          setData(prev => ({ ...prev, [keyName]: e.target.value }))
+        }
+        className={`w-full px-3 py-2 rounded-lg border ${
+          editable
+            ? "bg-white"
+            : "bg-slate-100 text-slate-500 cursor-not-allowed"
+        } focus:outline-none focus:ring-2 focus:ring-indigo-500`}
+      />
+    </div>
+  );
+
+  if (!data) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-slate-400">
+        Loading details…
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-100 px-6 py-10">
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-5xl mx-auto"
+      >
+        <div className="flex justify-between mb-8">
+          <div>
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 text-slate-500 mb-3"
+            >
+              <ArrowLeft size={16} /> Back
+            </button>
+
+            <h2 className="text-3xl font-bold">Edit Payslip</h2>
+            <p className="text-slate-500">
+              {data.firstName} {data.lastName} • {data.employeeId}
+            </p>
+          </div>
+
+          <button
+            onClick={save}
+            className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-xl"
+          >
+            <Save size={18} /> Save Changes
+          </button>
+        </div>
+
+        <div className="bg-white rounded-2xl p-8 shadow space-y-10">
+
+          {/* EMPLOYEE INFO */}
+          <section>
+            <h3 className="font-bold mb-4 flex gap-2 items-center">
+              <User size={18} /> Employee Info
+            </h3>
+            <div className="grid md:grid-cols-3 gap-4">
+              <Field label="Salary Month" keyName="salaryMonth" editable={false} />
+              <Field label="Email" keyName="email" editable={false} />
+              <Field label="Employee ID" keyName="employeeId" editable={false} />
+              <Field label="First Name" keyName="firstName" editable={false} />
+              <Field label="Last Name" keyName="lastName" editable={false} />
+              <Field label="Date of Joining" keyName="dateOfJoining" type="date" />
+            </div>
+          </section>
+
+          {/* ATTENDANCE */}
+          <section>
+            <h3 className="font-bold mb-4 flex gap-2 items-center">
+              <Calendar size={18} /> Attendance
+            </h3>
+            <div className="grid md:grid-cols-4 gap-4">
+              <Field label="Working Days" keyName="workingDays" />
+              <Field label="Paid Days" keyName="paidDays" />
+              <Field label="LOP Days" keyName="lopDays" />
+              <Field label="Total Leaves" keyName="totalLeaves" />
+              <Field label="Leaves Availed" keyName="leavesAvailed" />
+              <Field label="Leaves Used" keyName="leavesUsed" />
+              <Field label="Balance Leaves" keyName="remainingPaidLeaves" />
+            </div>
+          </section>
+
+          {/* SALARY */}
+          <section>
+            <h3 className="font-bold mb-4 flex gap-2 items-center">
+              <CreditCard size={18} /> Salary
+            </h3>
+            <div className="grid md:grid-cols-2 gap-4">
+              <Field label="Basic" keyName="basic" />
+              <Field label="HRA" keyName="hra" />
+              <Field label="Other Allowance" keyName="otherAllowance" />
+              <Field label="Special Pay" keyName="specialPay" />
+              <Field label="Incentive" keyName="incentive" />
+              <Field label="TDS" keyName="tds" />
+              <Field label="Other Deductions" keyName="otherDeductions" />
+              <Field label="PAN Card" keyName="panCard" />
+            </div>
+          </section>
+
+        </div>
+      </motion.div>
+    </div>
+  );
+}
