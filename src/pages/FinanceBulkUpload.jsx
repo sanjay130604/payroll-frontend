@@ -174,16 +174,16 @@ export default function FinanceBulkUpload() {
       // Handle both boolean true and string "true" if API behaves oddly, though usually boolean
       if (success) {
         let successMsg = message || "Upload successful";
+        let hasBackendErrors = false;
 
         if (data) {
-          // If we have specific counts, construct a detailed message
           if (typeof data.inserted === 'number') {
-            successMsg = `Successfully uploaded ${data.inserted} rows.`;
+            successMsg = `Successfully processed ${data.inserted + (data.updated || 0)} rows.`;
           }
 
-          // Handle duplicates/skipped rows from backend
           if (data.skipped && data.skipped.length > 0) {
-            const backendErrors = data.skipped.map((skipStr, i) => {
+            hasBackendErrors = true;
+            const backendErrors = data.skipped.map((skipStr) => {
               const parts = skipStr.split(": ");
               const idOrEmail = parts[0] || "Unknown";
               const reason = parts[1] || skipStr;
@@ -195,21 +195,25 @@ export default function FinanceBulkUpload() {
               };
             });
 
-            // Add to existing validation errors
+            // Combine with existing errors
             setValidationErrors(prev => [...prev, ...backendErrors]);
-            successMsg += ` (${data.skipped.length} duplicates skipped)`;
-          }
 
-          if (data.failedEmails && data.failedEmails.length > 0) {
-            setFailedEmails(data.failedEmails);
+            if (data.inserted === 0 && data.updated === 0) {
+              successMsg = "Upload failed: No rows matched Pay Fixation records.";
+            } else {
+              successMsg += ` (${data.skipped.length} rows skipped due to mismatches/duplicates)`;
+            }
           }
-        }
-
-        if (validationErrors.length > 0) {
-          successMsg += ` (${validationErrors.length} invalid rows were skipped)`;
         }
 
         setMsg(successMsg);
+
+        // If everything failed on server, don't clear the preview yet so user can see it
+        if (data && (data.inserted > 0 || data.updated > 0)) {
+          // Maybe clear validRows if they were all successful? 
+          // For now, let's keep them so they can see what was tried.
+        }
+
       } else {
         setMsg(message || "Upload failed");
       }
@@ -291,7 +295,7 @@ export default function FinanceBulkUpload() {
                     <thead className="bg-red-100/50 text-red-900 font-semibold sticky top-0">
                       <tr>
                         <th className="p-3 rounded-l-lg">Row</th>
-                        <th className="p-3">Email</th>
+                        <th className="p-3">ID / Email</th>
                         <th className="p-3 rounded-r-lg">Errors</th>
                       </tr>
                     </thead>

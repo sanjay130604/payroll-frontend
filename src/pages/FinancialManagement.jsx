@@ -49,13 +49,15 @@ function CreatePayrollModal({ open, onClose }) {
   });
 
   const [users, setUsers] = useState([]);
+  const [fixations, setFixations] = useState([]); // ✅ Store pay fixation data
   const [isAutofilled, setIsAutofilled] = useState(false);
 
   useEffect(() => {
     if (open) {
       fetchUsers();
+      fetchFixations(); // ✅ Fetch on open
       setIsAutofilled(false);
-      setForm(prev => ({ ...prev, email: "", employeeId: "", firstName: "", lastName: "" }));
+      setForm(prev => ({ ...prev, email: "", employeeId: "", firstName: "", lastName: "", basic: "", incentive: "" }));
     }
   }, [open]);
 
@@ -70,15 +72,29 @@ function CreatePayrollModal({ open, onClose }) {
     }
   };
 
+  const fetchFixations = async () => {
+    try {
+      const res = await axios.get("/api/finance/pay-fixation");
+      if (res.data.success) {
+        setFixations(res.data.list);
+      }
+    } catch (err) {
+      console.error("Failed to fetch pay fixation", err);
+    }
+  };
+
   const handleUserSelect = (e) => {
     const selectedEmail = e.target.value;
 
     if (!selectedEmail) {
       setIsAutofilled(false);
+      setForm(prev => ({ ...prev, email: "", employeeId: "", firstName: "", lastName: "", basic: "", incentive: "" }));
       return;
     }
 
     const user = users.find(u => u.email === selectedEmail);
+    const fixation = fixations.find(f => f.email === selectedEmail || (user && f.employeeId === user.employeeId));
+
     if (user) {
       setIsAutofilled(true);
       setForm(prev => ({
@@ -86,52 +102,12 @@ function CreatePayrollModal({ open, onClose }) {
         email: user.email,
         employeeId: user.employeeId || "",
         firstName: user.firstName,
-        lastName: user.lastName
+        lastName: user.lastName,
+        basic: fixation ? fixation.basic : "", // ✅ Auto-fill Basic
+        incentive: fixation ? fixation.variablePay : "" // ✅ Auto-fill Incentive (Variable Pay)
       }));
     }
   };
-
-  // const submit = async () => {
-  //   // 🛡️ FRONTEND VALIDATIONS
-  //   const isNum = (v) => v !== "" && v !== null && !isNaN(v);
-  //   const alphanumericRegex = /^[A-Z0-9]+$/i;
-
-  //   if (!/^\d{4}-\d{2}$/.test(form.salaryMonth)) return alert("Salary Month must be YYYY-MM");
-  //   if (!String(form.email).toLowerCase().endsWith("@gmail.com")) return alert("Employee Email must be @gmail.com");
-  //   if (!String(form.employeeId).toUpperCase().startsWith("EMP")) return alert("Employee ID must start with EMP");
-  //   if (String(form.firstName || "").trim().length < 2) return alert("First Name must be at least 2 letters");
-  //   if (String(form.lastName || "").trim().length < 1) return alert("Last Name must be at least 1 letter");
-  //   if (!form.dateOfJoining) return alert("Date of Joining is required");
-
-  //   // Attendance & Leaves (Numeric)
-  //   if (!isNum(form.workingDays)) return alert("Working Days must be a number");
-  //   if (!isNum(form.paidDays)) return alert("Paid Days must be a number");
-  //   if (!isNum(form.lopDays)) return alert("LOP Days must be a number");
-  //   if (!isNum(form.leavesAvailed)) return alert("Leaves Availed must be a number");
-  //   if (!isNum(form.leavesUsed)) return alert("Leaves Used must be a number");
-  //   if (!isNum(form.totalLeaves)) return alert("Total Leaves must be a number");
-  //   if (!isNum(form.remainingPaidLeaves)) return alert("Balance Leaves must be a number");
-
-  //   // Earnings & Deductions (Numeric)
-  //   if (!isNum(form.basic)) return alert("Basic Salary must be a number");
-  //   if (!isNum(form.hra)) return alert("HRA must be a number");
-  //   if (!isNum(form.otherAllowance)) return alert("Other Allowance must be a number");
-  //   if (!isNum(form.specialPay)) return alert("Special Pay must be a number");
-  //   if (!isNum(form.incentive)) return alert("Incentive must be a number");
-  //   if (!isNum(form.tds)) return alert("TDS must be a number");
-  //   if (!isNum(form.otherDeductions)) return alert("Other Deductions must be a number");
-
-  //   // PAN Card
-  //   const pan = String(form.panCard || "").trim();
-  //   if (pan.length !== 10 || !alphanumericRegex.test(pan)) return alert("PAN Card must be exactly 10 alphanumeric characters");
-
-  //   try {
-  //     const res = await axios.post("/api/finance/create", form);
-  //     console.log("POST RESPONSE", res.data);
-  //   } catch (e) {
-  //     console.error(e);
-  //   }
-  // };
 
   const submit = async () => {
     const isNum = (v) => v !== "" && v !== null && !isNaN(v);
@@ -309,11 +285,11 @@ function CreatePayrollModal({ open, onClose }) {
             Earnings & Deductions
           </h4>
 
-          {input("basic", "Basic Salary")}
+          {input("basic", "Basic Salary", "text", true)}
           {input("hra", "HRA")}
           {input("otherAllowance", "Other Allowance")}
           {input("specialPay", "Special Pay")}
-          {input("incentive", "Incentive")}
+          {input("incentive", "Incentive", "text", true)}
           {input("tds", "TDS")}
           {input("otherDeductions", "Other Deductions")}
           {input("panCard", "PAN Card")}

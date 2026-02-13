@@ -191,15 +191,14 @@ export default function AdminSidebar({ open, setOpen }) {
             to="/adminpanel"
             onClick={() => setOpen(false)}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${
-                isActive 
-                  ? "bg-slate-900 text-white shadow-md shadow-slate-200" 
-                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+              `flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${isActive
+                ? "bg-slate-900 text-white shadow-md shadow-slate-200"
+                : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
               }`
             }
           >
-             <LayoutDashboard size={20} />
-             <span>Dashboard</span>
+            <LayoutDashboard size={20} />
+            <span>Dashboard</span>
           </NavLink>
 
           {/* ================= USER MANAGEMENT ================= */}
@@ -260,19 +259,33 @@ export default function AdminSidebar({ open, setOpen }) {
             to="/admin/financial-management"
             onClick={() => setOpen(false)}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${
-                isActive 
-                  ? "bg-slate-900 text-white shadow-md shadow-slate-200" 
-                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+              `flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${isActive
+                ? "bg-slate-900 text-white shadow-md shadow-slate-200"
+                : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
               }`
             }
           >
-             <CreditCard size={20} />
-             <span>Financial Mgmt</span>
+            <CreditCard size={20} />
+            <span>Financial Mgmt</span>
+          </NavLink>
+
+          {/* ================= PAY FIXATION ================= */}
+          <NavLink
+            to="/admin/pay-fixation"
+            onClick={() => setOpen(false)}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${isActive
+                ? "bg-slate-900 text-white shadow-md shadow-slate-200"
+                : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+              }`
+            }
+          >
+            <CreditCard size={20} />
+            <span>Pay Fixation</span>
           </NavLink>
 
         </nav>
-        
+
         {/* Footer */}
         <div className="p-4 border-t border-slate-50">
           <div className="px-4 py-3 rounded-xl bg-slate-50 text-slate-400 text-xs font-medium text-center">

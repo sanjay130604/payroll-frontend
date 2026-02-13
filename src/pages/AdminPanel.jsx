@@ -95,12 +95,34 @@
 // }
 
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Users, DollarSign, Activity, ShieldCheck, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import axios from "../utils/axiosConfig";
 
 export default function AdminPanel() {
   const navigate = useNavigate();
+  const [stats, setStats] = useState({
+    totalEmployees: "...",
+    maleEmployees: "...",
+    femaleEmployees: "..."
+  });
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const res = await axios.get("/api/users/dashboard-stats");
+      if (res.data.success) {
+        setStats(res.data.stats);
+      }
+    } catch (err) {
+      console.error("Failed to fetch dashboard stats", err);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 animate-in fade-in duration-500">
@@ -161,25 +183,31 @@ export default function AdminPanel() {
         </div>
 
         {/* QUICK STATS */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <StatCard
-            title="Total Users"
-            value="150+"
-            desc="Active Employees"
+            title="Total Employees"
+            value={stats.totalEmployees}
+            desc="Active in System"
             icon={<Users className="text-blue-500" size={24} />}
           />
           <StatCard
-            title="Payroll Processed"
-            value="₹45L+"
-            desc="This Month"
-            icon={<DollarSign className="text-emerald-500" size={24} />}
+            title="Male Employees"
+            value={stats.maleEmployees}
+            desc="Gender: Male"
+            icon={<Users className="text-indigo-500" size={24} />}
           />
           <StatCard
+            title="Female Employees"
+            value={stats.femaleEmployees}
+            desc="Gender: Female"
+            icon={<Users className="text-pink-500" size={24} />}
+          />
+          {/* <StatCard
             title="System Status"
             value="99.9%"
             desc="Uptime Reliability"
             icon={<Activity className="text-orange-500" size={24} />}
-          />
+          /> */}
         </div>
       </section>
     </div>

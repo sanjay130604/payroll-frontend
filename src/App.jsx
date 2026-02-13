@@ -33,6 +33,8 @@ import ProfileBulkUpload from "./pages/ProfileBulkUpload";
 import FinancialManagement from "./pages/FinancialManagement";
 import EmployeeFinancialDetails from "./pages/EmployeeFinancialDetails";
 import ViewPayslip from "./pages/ViewPayslip"; // ✅ NEW
+import PayFixation from "./pages/PayFixation";
+import PayFixationBulkUpload from "./pages/PayFixationBulkUpload";
 
 export default function App() {
   return (
@@ -113,8 +115,20 @@ export default function App() {
 
           {/* PROFLE BULK UPLOAD */}
           <Route
-            path="/admin/user-management/profile/bulk-upload" // ✅ NEW ROUTE
+            path="/admin/user-management/profile/bulk-upload"
             element={<ProfileBulkUpload />}
+          />
+
+          {/* PAY FIXATION */}
+          <Route
+            path="/admin/pay-fixation"
+            element={<PayFixation />}
+          />
+
+          {/* PAY FIXATION BULK UPLOAD */}
+          <Route
+            path="/admin/pay-fixation/bulk-upload"
+            element={<PayFixationBulkUpload />}
           />
 
         </Route>
