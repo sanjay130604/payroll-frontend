@@ -22,8 +22,8 @@ export default function CreateUser() {
       return setMsg("All fields are required");
     }
 
-    if (!form.employeeId.toUpperCase().startsWith("EMP")) {
-      return setMsg("Employee ID must start with EMP");
+    if (!form.employeeId.toUpperCase().startsWith("VTAB")) {
+      return setMsg("Employee ID must start with VTAB");
     }
 
     if (form.password.length < 5) {

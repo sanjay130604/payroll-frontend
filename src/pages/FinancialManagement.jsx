@@ -147,8 +147,8 @@ function CreatePayrollModal({ open, onClose }) {
       return;
     }
 
-    if (!String(form.employeeId).toUpperCase().startsWith("EMP")) {
-      alert("Employee ID must start with EMP");
+    if (!String(form.employeeId).toUpperCase().startsWith("VTAB")) {
+      alert("Employee ID must start with VTAB");
       return;
     }
 

@@ -21,9 +21,9 @@ export default function ProfileBulkUpload() {
         const errors = [];
         const isPopulated = (v) => v !== "" && v !== null && v !== undefined;
 
-        // 1. Employee ID (Starts with EMP)
-        if (!String(row["employeeld"] || "").trim().toUpperCase().startsWith("EMP")) {
-            errors.push("Employee ID must start with EMP");
+        // 1. Employee ID (Starts with VTAB)
+        if (!String(row["employeeld"] || "").trim().toUpperCase().startsWith("VTAB")) {
+            errors.push("Employee ID must start with VTAB");
         }
 
         // 2. First Name (>= 2 chars)

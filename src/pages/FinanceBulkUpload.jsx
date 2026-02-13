@@ -35,9 +35,9 @@ export default function FinanceBulkUpload() {
       errors.push("Employee Mail id must be @gmail.com");
     }
 
-    // 3. Employee ID (Starts with EMP)
-    if (!String(row["Employee ID"] || "").trim().toUpperCase().startsWith("EMP")) {
-      errors.push("Employee ID must start with EMP");
+    // 3. Employee ID (Starts with VTAB)
+    if (!String(row["Employee ID"] || "").trim().toUpperCase().startsWith("VTAB")) {
+      errors.push("Employee ID must start with VTAB");
     }
 
     // 4. First Name (>= 2 letters)

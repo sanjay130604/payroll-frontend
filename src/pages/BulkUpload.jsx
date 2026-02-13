@@ -317,11 +317,11 @@ export default function BulkUpload() {
       errors.push("Password/New Password must be at least 4 characters");
     }
 
-    // 5. Employee ID - Must be EMP
+    // 5. Employee ID - Must be VTAB
     if (!employeeId) {
       errors.push("Employee ID is required");
-    } else if (!/^EMP/i.test(employeeId)) {
-      errors.push("Employee ID must start with 'EMP'");
+    } else if (!/^VTAB/i.test(employeeId)) {
+      errors.push("Employee ID must start with 'VTAB'");
     }
 
     return errors;
