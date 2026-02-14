@@ -254,21 +254,6 @@ export default function AdminSidebar({ open, setOpen }) {
             )}
           </div>
 
-          {/* ================= FINANCIAL MANAGEMENT ================= */}
-          <NavLink
-            to="/admin/financial-management"
-            onClick={() => setOpen(false)}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${isActive
-                ? "bg-slate-900 text-white shadow-md shadow-slate-200"
-                : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
-              }`
-            }
-          >
-            <CreditCard size={20} />
-            <span>Financial Mgmt</span>
-          </NavLink>
-
           {/* ================= PAY FIXATION ================= */}
           <NavLink
             to="/admin/pay-fixation"
@@ -282,6 +267,21 @@ export default function AdminSidebar({ open, setOpen }) {
           >
             <CreditCard size={20} />
             <span>Pay Fixation</span>
+          </NavLink>
+
+          {/* ================= FINANCIAL MANAGEMENT ================= */}
+          <NavLink
+            to="/admin/financial-management"
+            onClick={() => setOpen(false)}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${isActive
+                ? "bg-slate-900 text-white shadow-md shadow-slate-200"
+                : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+              }`
+            }
+          >
+            <CreditCard size={20} />
+            <span>Financial Mgmt</span>
           </NavLink>
 
         </nav>

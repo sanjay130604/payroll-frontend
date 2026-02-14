@@ -197,11 +197,11 @@ export default function EmployeeFinancialDetails() {
               <CreditCard size={18} /> Salary
             </h3>
             <div className="grid md:grid-cols-2 gap-4">
-              <Field label="Basic" keyName="basic" />
+              <Field label="Basic" keyName="basic" editable={false} />
               <Field label="HRA" keyName="hra" />
               <Field label="Other Allowance" keyName="otherAllowance" />
               <Field label="Special Pay" keyName="specialPay" />
-              <Field label="Incentive" keyName="incentive" />
+              <Field label="Incentive" keyName="incentive" editable={false} />
               <Field label="TDS" keyName="tds" />
               <Field label="Other Deductions" keyName="otherDeductions" />
               <Field label="PAN Card" keyName="panCard" />

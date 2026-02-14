@@ -51,7 +51,7 @@ export default function Topbar({ setMobileMenuOpen }) {
 
           {/* PROFILE */}
           <div
-            onClick={() => navigate("/profile")}
+            onClick={() => navigate("/payroll-summary")}
             className="flex items-center gap-3 cursor-pointer group p-1.5 pr-3 rounded-full hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all duration-200"
           >
             <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-primary-600 to-primary-400 flex items-center justify-center text-white font-bold shadow-md shadow-primary-200 group-hover:shadow-primary-300 transition-all">
