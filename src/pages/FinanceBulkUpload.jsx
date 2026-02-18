@@ -19,10 +19,6 @@ export default function FinanceBulkUpload() {
   /* ================= VALIDATION LOGIC ================= */
   const validateRow = (row, index) => {
     const errors = [];
-    const isNum = (v) => v !== "" && v !== null && v !== undefined && !isNaN(v);
-
-    // Normalize keys to handle case sensitivity if needed, but CSV usually matches template
-    // We'll assume the CSV headers match the template keys provided below.
 
     // 1. Salary Month (YYYY-MM)
     if (!/^\d{4}-\d{2}$/.test(row["Salary Month"])) {
@@ -50,48 +46,17 @@ export default function FinanceBulkUpload() {
       errors.push("last name must be 1 letter or more");
     }
 
-    // 6. Numeric Fields (NotEmpty & Digits)
-    const numericFields = [
-      "No of Working Days",
-      "Leaves Availed",
-      "Leaves Used",
-      "Total Leaves",
-      "Pay Days",
-      "Remaining Paid leaves",
-      "Basic",
-      "HRA",
-      "Other Allowance",
-      "Special Pay",
-      "Incentive", // Assuming Incentive follows same rule
-      "TDS",
-      "Other Deductions",
-      "lop days"
-    ];
-
-    numericFields.forEach(field => {
-      if (!isNum(row[field])) {
-        errors.push(`${field} must be a number (cannot be empty)`);
-      }
-    });
-
-    // 7. PAN Card (10 chars, Alphanumeric)
-    // const pan = String(row["Pancard No"] || "").trim();
-    // if (!/^[A-Z0-9]{10}$/i.test(pan)) {
-    //   errors.push("Pancard No must be 10 alphanumeric characters");
-    // }
-
-    // 8. Date of Joining (DD/MM/YYYY or DD-MM-YYYY)
-    // Regex allows / or - separator
-    if (!/^\d{1,2}[\/-]\d{1,2}[\/-]\d{4}$/.test(row["date of joining"])) {
-      errors.push("date of joining must be DD/MM/YYYY");
-    }
+    // Note: Other fields (working days, paid days, salary components) will be
+    // automatically fetched and calculated by the backend from PayrollTemplate
+    // and Pay Fixation sheets. No need to validate them here.
 
     return errors;
   };
 
   /* ================= LOAD CSV ================= */
-  const loadCSV = (file) => {
-    if (!file) return; // Prevent crash if file undefined
+  const loadCSV = async (file) => {
+    if (!file) return;
+
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
@@ -103,13 +68,13 @@ export default function FinanceBulkUpload() {
         const invalid = [];
 
         data.forEach((row, index) => {
-          // Basic check: ignore completely empty rows that might slip through
           if (Object.keys(row).length === 0) return;
 
+          // ✅ VALIDATION ONLY (No calculations - backend will handle)
           const errors = validateRow(row, index);
           if (errors.length > 0) {
             invalid.push({
-              index: index + 1, // 1-based index for UI
+              index: index + 1,
               email: row["Employee Mail id"] || "Unknown Email",
               errors
             });
@@ -132,24 +97,72 @@ export default function FinanceBulkUpload() {
   };
 
   /* ================= DOWNLOAD TEMPLATE ================= */
-  const downloadTemplate = () => {
-    const headers = [
-      "Salary Month", "Employee Mail id", "Employee ID", "frist name", "last name",
-      "No of Working Days", "Leaves Availed", "Leaves Used", "Total Leaves", "Pay Days",
-      "Remaining Paid leaves", "Basic", "HRA", "Other Allowance", "Special Pay",
-      "Incentive", "TDS", "Pancard No", "Other Deductions", "enter details data",
-      "date of joining", "Pay Date", "lop days"
-    ];
+  const downloadTemplate = async () => {
+    try {
+      setMsg("Generating template...");
 
-    const csvContent = headers.join(",") + "\n";
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", "Finance_Upload_Template.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      // Fetch template data from backend
+      const res = await axios.get("/api/finance/payroll-template");
+      const list = res.data.success ? (res.data.list || []) : [];
+
+      const headers = [
+        "Salary Month", "Employee Mail id", "Employee ID", "frist name", "last name",
+        "No of Working Days", "Leaves Availed", "Leaves Used", "Total Leaves", "Pay Days",
+        "remaining Paid leave", "Other Allowance", "Special Pay", "lop days", "Incentive"
+      ];
+
+      // Current Month as default (e.g., 2026-02)
+      const now = new Date();
+      const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+      let csvContent = headers.join(",") + "\n";
+
+      if (list.length > 0) {
+        // Pre-fill with employee data
+        list.forEach(emp => {
+          const row = [
+            currentMonth,
+            emp.email || "",
+            emp.employeeId || "",
+            emp.firstName || "",
+            emp.lastName || "",
+            emp.workingDays || "30",
+            emp.leavesAvailed || "0",
+            emp.leavesUsed || "0",
+            emp.totalLeaves || "0",
+            emp.paidDays || "30",
+            emp.remainingPaidLeaves || "0",
+            emp.otherAllowance || "0",
+            emp.specialPay || "0",
+            emp.lopDays || "0",
+            "0" // Incentive default
+          ];
+          csvContent += row.map(f => `"${String(f).replace(/"/g, '""')}"`).join(",") + "\n";
+        });
+      } else {
+        // Fallback sample row if no data
+        const sampleRow = [
+          currentMonth, "employee@gmail.com", "VTAB001", "John", "Doe",
+          "30", "0", "0", "0", "30",
+          "0", "0", "0", "0", "0"
+        ];
+        csvContent += sampleRow.join(",") + "\n";
+      }
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `Finance_Template_${currentMonth}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setMsg("Template downloaded successfully.");
+
+    } catch (err) {
+      console.error("Download Template Error:", err);
+      setMsg("Failed to download template. Please try again.");
+    }
   };
 
   /* ================= UPLOAD ================= */
@@ -250,6 +263,48 @@ export default function FinanceBulkUpload() {
             Download Template
           </button>
         </div>
+
+        {/* ================= AUTO-CALCULATION INFO ================= */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8 bg-blue-50 border border-blue-200 rounded-xl p-6"
+        >
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+              <CheckCircle className="text-blue-600" size={20} />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-bold text-blue-900 mb-2 text-lg">✨ Automatic Salary Calculation Enabled</h3>
+              <p className="text-blue-800 text-sm mb-3">
+                You only need to upload basic employee information. The system will automatically:
+              </p>
+              <ul className="text-sm text-blue-700 space-y-1.5 mb-3">
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-500 mt-0.5">•</span>
+                  <span>Fetch <strong>paid days, working days, and allowances</strong> from PayrollTemplate sheet</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-500 mt-0.5">•</span>
+                  <span>Fetch <strong>basic salary</strong> from Pay Fixation sheet</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-500 mt-0.5">•</span>
+                  <span>Calculate all salary components using the formulas below</span>
+                </li>
+              </ul>
+              <div className="bg-white border border-blue-100 rounded-lg p-3 text-xs font-mono text-slate-700">
+                <div className="grid grid-cols-1 gap-1">
+                  <div><span className="text-blue-600">total_basic</span> = basic × (paid_days ÷ working_days)</div>
+                  <div><span className="text-blue-600">HRA</span> = 0.30 × total_basic</div>
+                  <div><span className="text-blue-600">TDS</span> = 0.10 × total_basic</div>
+                  <div><span className="text-blue-600">netPay</span> = total_basic + HRA + otherAllowance + specialPay</div>
+                  <div><span className="text-blue-600">grossPay</span> = netPay - TDS</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
 
         {/* ================= UPLOAD CARD ================= */}
         <motion.div

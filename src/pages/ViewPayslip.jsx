@@ -74,18 +74,20 @@ export default function ViewPayslip() {
     );
   }
 
-  /* ================= CALCULATIONS ================= */
-  const gross =
-    Number(d.basic || 0) +
-    Number(d.hra || 0) +
-    Number(d.otherAllowance || 0) +
-    Number(d.specialPay || 0) +
-    Number(d.incentive || 0);
+  /* ================= CALCULATIONS (FETCHED FROM SHEET) ================= */
+  const basic = Number(d.basic || 0);
+  const hra = Number(d.hra || 0);
+  const otherAllowance = Number(d.otherAllowance || 0);
+  const specialPay = Number(d.specialPay || 0);
+  const incentive = Number(d.incentive || 0);
 
-  const deductions =
-    Number(d.tds || 0) + Number(d.otherDeductions || 0);
+  // Use values directly from Google Sheet/Backend
+  const tds = Number(d.tds || 0);
+  // FIX: Backend 'netPay' is Earnings (Gross), 'grossPay' is Take Home (Net)
+  const gross = Number(d.netPay || 0);
+  const netPay = Number(d.grossPay || 0);
 
-  const netPay = gross - deductions;
+  const totalDeductions = tds;
 
   const payPeriod = new Date(`${month}-01`).toLocaleDateString("en-IN", {
     month: "long",
@@ -158,7 +160,7 @@ export default function ViewPayslip() {
             <h3 className="font-bold text-slate-700 mb-4">Earnings</h3>
             {[
               ["Basic", d.basic],
-              ["HRA", d.hra],
+              ["HRA", d.hra],//
               ["Other Allowance", d.otherAllowance],
               ["Special Pay", d.specialPay],
               ["Incentive", d.incentive]
@@ -179,8 +181,7 @@ export default function ViewPayslip() {
           <div>
             <h3 className="font-bold text-slate-700 mb-4">Deductions</h3>
             {[
-              ["TDS", d.tds],
-              ["Other Deductions", d.otherDeductions]
+              ["TDS", d.tds]
             ].map(([label, val]) => (
               <div key={label} className="flex justify-between border-b py-2">
                 <span>{label}</span>
@@ -189,16 +190,16 @@ export default function ViewPayslip() {
             ))}
             <div className="flex justify-between mt-4 font-black text-red-600">
               <span>Total</span>
-              <span>₹{deductions.toLocaleString("en-IN")}</span>
+              <span>₹{totalDeductions.toLocaleString("en-IN")}</span>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* NET PAY */}
-        <div className="mt-16 bg-indigo-600 text-white rounded-2xl p-8 text-center shadow-xl">
-          <p className="uppercase text-xs tracking-widest opacity-70 mb-2">Net Pay</p>
-          <h2 className="text-4xl font-black">₹{netPay.toLocaleString("en-IN")}</h2>
-        </div>
+      {/* NET PAY */}
+      <div className="mt-16 bg-indigo-600 text-white rounded-2xl p-8 text-center shadow-xl">
+        <p className="uppercase text-xs tracking-widest opacity-70 mb-2">Net Pay</p>
+        <h2 className="text-4xl font-black">₹{netPay.toLocaleString("en-IN")}</h2>
       </div>
     </div>
   );

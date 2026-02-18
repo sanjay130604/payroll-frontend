@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import axios from "../utils/axiosConfig";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Save, Calendar, User, CreditCard } from "lucide-react";
+import { ArrowLeft, Save, Calendar, User, CreditCard, RefreshCw } from "lucide-react";
+import { calculateTotalWorkingDays, calculateProratedAmount } from "../utils/payrollHelper";
 
 export default function EmployeeFinancialDetails() {
   const { email, month } = useParams();
@@ -10,6 +11,7 @@ export default function EmployeeFinancialDetails() {
 
   const [data, setData] = useState(null);
   const [row, setRow] = useState(null);
+  const [fixation, setFixation] = useState(null); // ✅ To get original base salary
 
   /* ================= LOAD ================= */
   useEffect(() => {
@@ -22,6 +24,18 @@ export default function EmployeeFinancialDetails() {
         email: decodeURIComponent(email), // ✅ IMPORTANT
         salaryMonth: month
       });
+
+      // Fetch fixation for this employee to get original base
+      try {
+        const fixRes = await axios.get("/api/finance/pay-fixation");
+        if (fixRes.data.success) {
+          const empId = res.data.finance?.employeeId;
+          const found = fixRes.data.list.find(f => f.employeeId === empId || f.email === decodeURIComponent(email));
+          setFixation(found || null);
+        }
+      } catch (e) {
+        console.error("Fixation fetch error", e);
+      }
 
       if (!res.data.success) {
         alert("Payroll not found");
@@ -37,10 +51,24 @@ export default function EmployeeFinancialDetails() {
         if (!isNaN(d)) f.dateOfJoining = d.toISOString().split("T")[0];
       }
 
-      // Convert all fields to string for inputs
+      // Convert financial fields to numbers first, then strings for inputs
+      const numericFields = [
+        "workingDays", "paidDays", "lopDays", "totalLeaves", "leavesAvailed",
+        "leavesUsed", "remainingPaidLeaves", "basic", "hra", "otherAllowance",
+        "specialPay", "incentive", "tds", "otherDeductions", "netPay"
+      ];
+
+      numericFields.forEach(k => {
+        const val = Number(f[k]);
+        f[k] = isNaN(val) ? "0" : String(val);
+      });
+
+      // Convert other fields to string for inputs
       Object.keys(f).forEach(k => {
-        if (f[k] === null || f[k] === undefined) f[k] = "";
-        else f[k] = String(f[k]);
+        if (!numericFields.includes(k)) {
+          if (f[k] === null || f[k] === undefined) f[k] = "";
+          else f[k] = String(f[k]);
+        }
       });
 
       setData(f);
@@ -84,7 +112,23 @@ export default function EmployeeFinancialDetails() {
 
       const res = await axios.post("/api/finance/update", {
         row,
-        ...payload
+        ...payload,
+        action: "updateMonthlyFinance",
+        // Calculate using new formula
+        netPay: (
+          Number(payload.basic || 0) +
+          Number(payload.hra || 0) +
+          Number(payload.otherAllowance || 0) +
+          Number(payload.specialPay || 0) +
+          Number(payload.incentive || 0)
+        ),
+        grossPay: (
+          Number(payload.basic || 0) +
+          Number(payload.hra || 0) +
+          Number(payload.otherAllowance || 0) +
+          Number(payload.specialPay || 0) +
+          Number(payload.incentive || 0)
+        ) - Number(payload.tds || 0)
       });
 
       if (res.data.success) {
@@ -119,6 +163,36 @@ export default function EmployeeFinancialDetails() {
       />
     </div>
   );
+
+  // ✅ Auto-calculate when days change
+  useEffect(() => {
+    if (data && fixation) {
+      const wd = Number(data.workingDays || 0);
+      const lop = Number(data.lopDays || 0);
+      const paidDays = Math.max(0, wd - lop);
+
+      if (wd > 0 && fixation.basic) {
+        // Calculate using NEW formula
+        const ratio = wd > 0 ? (paidDays / wd) : 1;
+        const totalBasic = fixation.basic > 0 ? Math.round(fixation.basic * ratio) : 0;
+        const hra = totalBasic > 0 ? Math.round(totalBasic * 0.30) : 0;
+        const tds = totalBasic > 0 ? Math.round(totalBasic * 0.10) : 0; // ✅ 10% of total_basic
+
+        setData(prev => ({
+          ...prev,
+          paidDays: String(paidDays),
+          basic: String(totalBasic),
+          hra: String(hra),
+          tds: String(tds),
+          // Keep other allowances at 0 unless they're already set
+          otherAllowance: prev.otherAllowance || "0",
+          specialPay: prev.specialPay || "0",
+          incentive: prev.incentive || "0",
+          otherDeductions: prev.otherDeductions || "0"
+        }));
+      }
+    }
+  }, [data?.workingDays, data?.lopDays, fixation]);
 
   if (!data) {
     return (
@@ -204,7 +278,7 @@ export default function EmployeeFinancialDetails() {
               <Field label="Incentive" keyName="incentive" editable={false} />
               <Field label="TDS" keyName="tds" />
               <Field label="Other Deductions" keyName="otherDeductions" />
-              <Field label="PAN Card" keyName="panCard" />
+
             </div>
           </section>
 

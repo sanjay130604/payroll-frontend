@@ -154,7 +154,7 @@ export default function SalaryHistory() {
       {hasSearched ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {history.map((m, index) => {
-            const isGenerated = Boolean(m.salary);
+            const isGenerated = Boolean(m.salary || m.netPay);
 
             return (
               <div
@@ -182,7 +182,7 @@ export default function SalaryHistory() {
                   <>
                     <p className="text-xs text-slate-400">Net Salary</p>
                     <p className="text-2xl font-bold">
-                      ₹{Number(m.salary).toLocaleString("en-IN")}
+                      ₹{Number(m.netPay || m.salary || 0).toLocaleString("en-IN")}
                     </p>
                   </>
                 ) : (

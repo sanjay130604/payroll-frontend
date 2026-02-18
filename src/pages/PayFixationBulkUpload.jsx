@@ -30,10 +30,10 @@ export default function PayFixationBulkUpload() {
 
         const empId = findValue(["EmployeeID", "Employee", "ID", "EmpID"]);
         const basic = findValue(["BaseSalary", "Basic", "BaseSalar", "BasicSalary"]);
-        const variable = findValue(["VariablePay", "Variable", "VarPay"]);
+        const variablePay = findValue(["VariablePay", "Variable", "Incentive", "Variable Pay"]);
 
         // Check for empty row
-        if (!empId && !basic && !variable) return { status: "EMPTY" };
+        if (!empId && !basic && !variablePay) return { status: "EMPTY" };
 
         // 1. Check for duplicates within the file
         if (empId && seenIds.has(empId.toUpperCase())) {
@@ -49,13 +49,16 @@ export default function PayFixationBulkUpload() {
             errors.push("Employee ID must start with 'VTAB'");
         }
 
-        if (basic !== "" && isNaN(basic)) {
-            errors.push("Base Salary must be a number");
-        }
+        const numFields = [
+            { val: basic, label: "Base Salary" },
+            { val: variablePay, label: "Variable Pay" }
+        ];
 
-        if (variable !== "" && isNaN(variable)) {
-            errors.push("Variable Pay must be a number");
-        }
+        numFields.forEach(f => {
+            if (f.val !== "" && isNaN(f.val)) {
+                errors.push(`${f.label} must be a number`);
+            }
+        });
 
         // Return Data Object
         return {
@@ -63,7 +66,7 @@ export default function PayFixationBulkUpload() {
             data: {
                 employeeId: empId,
                 basic: basic ? Number(basic) : 0,
-                variablePay: variable ? Number(variable) : 0,
+                variablePay: variablePay ? Number(variablePay) : 0,
                 // store original row for debugging if needed
                 _original: row
             },
@@ -312,20 +315,20 @@ export default function PayFixationBulkUpload() {
                                             <table className="w-full text-sm text-center">
                                                 <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
                                                     <tr>
-                                                        <th className="py-3 px-4">Employee ID</th>
-                                                        <th className="py-3 px-4">Basic</th>
-                                                        <th className="py-3 px-4">Variable Pay</th>
+                                                        <th className="py-3 px-2">Emp ID</th>
+                                                        <th className="py-3 px-2">Basic Salary</th>
+                                                        <th className="py-3 px-2">Variable Pay</th>
                                                         <th className="py-3 px-4">Status</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-slate-100">
                                                     {validRows.slice(0, 10).map((row, idx) => (
-                                                        <tr key={idx} className="hover:bg-slate-50">
-                                                            <td className="py-2 px-4 font-mono text-xs text-slate-600">{row.employeeId}</td>
-                                                            <td className="py-2 px-4 font-bold text-slate-700">₹{row.basic}</td>
-                                                            <td className="py-2 px-4 text-slate-600">₹{row.variablePay}</td>
-                                                            <td className="py-2 px-4">
-                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                                                        <tr key={idx} className="hover:bg-slate-50 text-[11px]">
+                                                            <td className="py-2 px-2 font-mono text-slate-600">{row.employeeId}</td>
+                                                            <td className="py-2 px-2 font-bold text-slate-700">₹{row.basic}</td>
+                                                            <td className="py-2 px-2 font-bold text-slate-700">₹{row.variablePay || 0}</td>
+                                                            <td className="py-2 px-4 whitespace-nowrap">
+                                                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-100 text-emerald-800">
                                                                     {row.message || "Ready"}
                                                                 </span>
                                                             </td>

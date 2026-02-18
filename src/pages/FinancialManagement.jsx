@@ -3,6 +3,7 @@ import axios from "../utils/axiosConfig";
 import { useNavigate } from "react-router-dom";
 
 import { Plus, Upload, Search, FileText, Edit, Eye, Filter, X } from "lucide-react";
+import { calculateTotalWorkingDays, calculateProratedAmount } from "../utils/payrollHelper";
 
 /* ================= CONSTANTS ================= */
 const YEARS = Array.from({ length: 4 }, (_, i) => 2026 + i);
@@ -42,7 +43,6 @@ function CreatePayrollModal({ open, onClose }) {
     specialPay: "",
     incentive: "",
     tds: "",
-    panCard: "",
     otherDeductions: "",
     dateOfJoining: "",
     lopDays: ""
@@ -50,6 +50,7 @@ function CreatePayrollModal({ open, onClose }) {
 
   const [users, setUsers] = useState([]);
   const [fixations, setFixations] = useState([]); // ✅ Store pay fixation data
+  const [selectedFixation, setSelectedFixation] = useState(null); // ✅ Original monthly values
   const [isAutofilled, setIsAutofilled] = useState(false);
 
   useEffect(() => {
@@ -97,17 +98,98 @@ function CreatePayrollModal({ open, onClose }) {
 
     if (user) {
       setIsAutofilled(true);
-      setForm(prev => ({
-        ...prev,
-        email: user.email,
-        employeeId: user.employeeId || "",
-        firstName: user.firstName,
-        lastName: user.lastName,
-        basic: fixation ? fixation.basic : "", // ✅ Auto-fill Basic
-        incentive: fixation ? fixation.variablePay : "" // ✅ Auto-fill Incentive (Variable Pay)
-      }));
+      setSelectedFixation(fixation || null);
+
+      const basicVal = fixation ? fixation.basic : 0;
+      const incentiveVal = fixation ? fixation.variablePay : 0;
+
+      setForm(prev => {
+        const workingDays = Number(prev.workingDays || 0);
+        const paidDays = Number(prev.paidDays || 0);
+        const basicVal = fixation ? Number(fixation.basic || 0) : 0;
+
+        const totalBasic = workingDays > 0 ? calculateProratedAmount(basicVal, paidDays, workingDays) : basicVal;
+        const hra = Math.round(totalBasic * 0.30);
+        const tds = Math.round(totalBasic * 0.10);
+
+        return {
+          ...prev,
+          email: user.email,
+          employeeId: user.employeeId || "",
+          firstName: user.firstName,
+          lastName: user.lastName,
+          basic: totalBasic || "",
+          hra: hra || "",
+          tds: tds || "",
+          incentive: fixation ? fixation.variablePay : "",
+          otherAllowance: "", // Will be fetched or manual
+          specialPay: "", // Will be fetched or manual
+          otherDeductions: 0
+        };
+      });
     }
   };
+
+  // ✅ Auto-calculate when days change
+  useEffect(() => {
+    if (form.salaryMonth && /^\d{4}-\d{2}$/.test(form.salaryMonth)) {
+      const [y, m] = form.salaryMonth.split("-").map(Number);
+      const wd = calculateTotalWorkingDays(y, m);
+      setForm(prev => ({ ...prev, workingDays: String(wd) }));
+    }
+  }, [form.salaryMonth]);
+
+  useEffect(() => {
+    const wd = Number(form.workingDays || 0);
+    const lop = Number(form.lopDays || 0);
+    const paidDays = Math.max(0, wd - lop);
+    setForm(prev => ({ ...prev, paidDays: String(paidDays) }));
+  }, [form.workingDays, form.lopDays]);
+
+  useEffect(() => {
+    if (selectedFixation) {
+      const wd = Number(form.workingDays || 0);
+      const pd = Number(form.paidDays || 0);
+      const basicVal = Number(selectedFixation.basic || 0);
+
+      const totalBasic = wd > 0 ? calculateProratedAmount(basicVal, pd, wd) : basicVal;
+      const hra = Math.round(totalBasic * 0.30);
+      const tds = Math.round(totalBasic * 0.10);
+
+      setForm(prev => ({
+        ...prev,
+        basic: String(totalBasic),
+        hra: String(hra),
+        tds: String(tds),
+        incentive: String(selectedFixation.variablePay || 0)
+      }));
+    }
+  }, [form.workingDays, form.paidDays, selectedFixation]);
+
+  // Fetch External Allowances
+  useEffect(() => {
+    const fetchExternalData = async () => {
+      if (form.firstName && form.lastName) {
+        try {
+          // This endpoint should be implemented in backend to fetch from the new sheet
+          const res = await axios.post("/api/finance/external-allowances", {
+            firstName: form.firstName,
+            lastName: form.lastName
+          });
+          if (res.data.success) {
+            setForm(prev => ({
+              ...prev,
+              otherAllowance: String(res.data.otherAllowance || 0),
+              specialPay: String(res.data.specialPay || 0)
+            }));
+          }
+        } catch (err) {
+          console.error("Failed to fetch external allowances", err);
+        }
+      }
+    };
+    fetchExternalData();
+  }, [form.firstName, form.lastName]);
 
   const submit = async () => {
     const isNum = (v) => v !== "" && v !== null && !isNaN(v);
@@ -138,10 +220,6 @@ function CreatePayrollModal({ open, onClose }) {
       return;
     }
 
-    if (!form.dateOfJoining) {
-      alert("Date of Joining is required");
-      return;
-    }
 
     if (!isNum(form.workingDays)) return alert("Working Days must be a number");
     if (!isNum(form.paidDays)) return alert("Paid Days must be a number");
@@ -159,14 +237,18 @@ function CreatePayrollModal({ open, onClose }) {
     if (!isNum(form.tds)) return alert("TDS must be a number");
     if (!isNum(form.otherDeductions)) return alert("Other Deductions must be a number");
 
-    const pan = (form.panCard || "").trim();
-    if (pan.length !== 10 || !alphanumericRegex.test(pan)) {
-      alert("PAN Card must be exactly 10 alphanumeric characters");
-      return;
-    }
+
+
+    const netPay = (
+      Number(form.basic || 0) +
+      Number(form.hra || 0) +
+      Number(form.otherAllowance || 0) +
+      Number(form.specialPay || 0) +
+      Number(form.incentive || 0)
+    ) - Number(form.tds || 0);
 
     try {
-      const res = await axios.post("/api/finance/create", form);
+      const res = await axios.post("/api/finance/create", { ...form, netPay });
 
       if (res.data?.success) {
         alert("Payroll created successfully");
@@ -285,14 +367,13 @@ function CreatePayrollModal({ open, onClose }) {
             Earnings & Deductions
           </h4>
 
-          {input("basic", "Basic Salary", "text", true)}
-          {input("hra", "HRA")}
-          {input("otherAllowance", "Other Allowance")}
-          {input("specialPay", "Special Pay")}
+          {input("basic", "Total Basic", "text", true)}
+          {input("hra", "HRA (30% of Basic)", "text", true)}
+          {input("otherAllowance", "Other Allowance (External)")}
+          {input("specialPay", "Special Pay (External)")}
           {input("incentive", "Incentive", "text", true)}
-          {input("tds", "TDS")}
-          {input("otherDeductions", "Other Deductions")}
-          {input("panCard", "PAN Card")}
+          {input("tds", "TDS (10% of Basic)", "text", true)}
+
         </div>
 
         <div className="flex justify-end gap-4 mt-10 pt-6 border-t border-slate-100">
