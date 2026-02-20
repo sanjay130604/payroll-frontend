@@ -241,7 +241,6 @@ function CreatePayrollModal({ open, onClose }) {
 
     const netPay = (
       Number(form.basic || 0) +
-      Number(form.hra || 0) +
       Number(form.otherAllowance || 0) +
       Number(form.specialPay || 0) +
       Number(form.incentive || 0)

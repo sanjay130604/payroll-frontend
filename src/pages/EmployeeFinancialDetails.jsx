@@ -117,14 +117,12 @@ export default function EmployeeFinancialDetails() {
         // Calculate using new formula
         netPay: (
           Number(payload.basic || 0) +
-          Number(payload.hra || 0) +
           Number(payload.otherAllowance || 0) +
           Number(payload.specialPay || 0) +
           Number(payload.incentive || 0)
         ),
         grossPay: (
           Number(payload.basic || 0) +
-          Number(payload.hra || 0) +
           Number(payload.otherAllowance || 0) +
           Number(payload.specialPay || 0) +
           Number(payload.incentive || 0)
