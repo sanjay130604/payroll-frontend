@@ -162,23 +162,17 @@ export default function PayrollSummary() {
 
             <div className="space-y-3">
               <InfoRow label="Email" value={emp.email} icon={<Briefcase size={14} />} />
-              <InfoRow label="Joining Date" value={emp.dateOfJoining ? new Date(emp.dateOfJoining).toLocaleDateString("en-GB") : "-"} icon={<Calendar size={14} />} />
+              {/* <InfoRow label="Joining Date" value={emp.dateOfJoining ? new Date(emp.dateOfJoining).toLocaleDateString("en-GB") : "-"} icon={<Calendar size={14} />} /> */}
               <InfoRow label="PAN Card" value={emp.panCard} icon={<CreditCard size={14} />} />
             </div>
           </DashboardCard>
 
           {/* ATTENDANCE & LEAVES */}
           <DashboardCard title="Attendance Overview" icon={<FileText className="text-indigo-500" size={20} />}>
-            <div className="grid grid-cols-2 gap-4">
-              <StatBox label="Working Days" value={emp.workingDays} />
-              <StatBox label="Paid Days" value={emp.paidDays} />
-              <StatBox label="Leaves Taken" value={emp.leavesAvailed} color="text-orange-600" />
-              <StatBox label="LOP Days" value={emp.lopDays} color="text-red-600" />
-            </div>
-            <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
-              <InfoRow label="Total Leaves" value={emp.totalLeaves} />
-              <InfoRow label="Leaves Used" value={emp.leavesUsed} />
-              <InfoRow label="Balance Leaves" value={emp.remainingPaidLeaves} highlight />
+            <div className="grid grid-cols-3 gap-4">
+              <StatBox label="Total Leaves" value={emp.totalLeaves} color="text-slate-800" />
+              <StatBox label="Leaves Used" value={emp.leavesUsed} color="text-orange-600" />
+              <StatBox label="Balance Leaves" value={emp.remainingPaidLeaves} color="text-green-600" />
             </div>
           </DashboardCard>
 
