@@ -24,7 +24,7 @@ const MONTHS = [
 ];
 
 /* ================= CREATE PAYROLL MODAL ================= */
-function CreatePayrollModal({ open, onClose }) {
+function CreatePayrollModal({ open, onClose, onSuccess }) {
   const [form, setForm] = useState({
     salaryMonth: "",
     email: "",
@@ -245,7 +245,7 @@ function CreatePayrollModal({ open, onClose }) {
       if (res.data?.success) {
         alert("Payroll created successfully");
         onClose();
-        window.location.reload();
+        if (onSuccess) onSuccess();
       } else {
         alert(res.data?.message || "Creation failed");
       }
@@ -653,6 +653,7 @@ export default function FinancialManagement() {
       <CreatePayrollModal
         open={showCreate}
         onClose={() => setShowCreate(false)}
+        onSuccess={search}
       />
     </div>
   );
