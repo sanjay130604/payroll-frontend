@@ -23,6 +23,7 @@ const calculateSalary = (p) => {
 export default function PayrollSummary() {
   const [emp, setEmp] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [attendance, setAttendance] = useState(null); // 🔥 NEW: Track attendance
   const [error, setError] = useState(null); // 🔥 NEW: Track errors
   const navigate = useNavigate();
 
@@ -74,14 +75,18 @@ export default function PayrollSummary() {
           setEmp(res.data.finance);
         }
 
-        // STEP 3: EMPLOYEE ID → PROFILE MANAGEMENT
-        return axios.get(
-          `/api/profile/employee/${empId}`
-        );
+        // STEP 3: FETCH PROFILE & ATTENDANCE CONCURRENTLY
+        const profileReq = axios.get(`/api/profile/employee/${empId}`);
+        const attendanceReq = axios.get("/api/payroll/attendance", { params: { employeeId: empId } });
+
+        return Promise.allSettled([profileReq, attendanceReq]);
       })
-      .then(res => {
-        if (res.data.success) {
-          setProfile(res.data.data);
+      .then(([profileRes, attendanceRes]) => {
+        if (profileRes.status === "fulfilled" && profileRes.value.data.success) {
+          setProfile(profileRes.value.data.data);
+        }
+        if (attendanceRes.status === "fulfilled" && attendanceRes.value.data.success) {
+          setAttendance(attendanceRes.value.data.attendance);
         }
       })
       .catch((err) => {
@@ -162,17 +167,30 @@ export default function PayrollSummary() {
 
             <div className="space-y-3">
               <InfoRow label="Email" value={emp.email} icon={<Briefcase size={14} />} />
-              {/* <InfoRow label="Joining Date" value={emp.dateOfJoining ? new Date(emp.dateOfJoining).toLocaleDateString("en-GB") : "-"} icon={<Calendar size={14} />} /> */}
-              <InfoRow label="PAN Card" value={emp.panCard} icon={<CreditCard size={14} />} />
+              <InfoRow
+                label="Joining Date"
+                value={(() => {
+                  const dateVal = profile?.data_of_joining || profile?.date_of_joining || emp.dateOfJoining;
+                  if (!dateVal || dateVal === "-") return "-";
+                  const date = new Date(dateVal);
+                  return isNaN(date.getTime()) ? dateVal : date.toLocaleDateString("en-GB");
+                })()}
+                icon={<Calendar size={14} />}
+              />
+              <InfoRow
+                label="PAN Card"
+                value={profile?.["pan card"] || profile?.pancard || emp.panCard || "-"}
+                icon={<CreditCard size={14} />}
+              />
             </div>
           </DashboardCard>
 
           {/* ATTENDANCE & LEAVES */}
           <DashboardCard title="Attendance Overview" icon={<FileText className="text-indigo-500" size={20} />}>
             <div className="grid grid-cols-3 gap-4">
-              <StatBox label="Total Leaves" value={emp.totalLeaves} color="text-slate-800" />
-              <StatBox label="Leaves Used" value={emp.leavesUsed} color="text-orange-600" />
-              <StatBox label="Balance Leaves" value={emp.remainingPaidLeaves} color="text-green-600" />
+              <StatBox label="Total Leaves" value={attendance?.totalLeaves} color="text-slate-800" />
+              <StatBox label="Leaves Used" value={attendance?.leavesUsed} color="text-orange-600" />
+              <StatBox label="Balance Leaves" value={attendance?.remainingPaidLeaves} color="text-green-600" />
             </div>
           </DashboardCard>
 

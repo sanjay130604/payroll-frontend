@@ -133,6 +133,12 @@ export default function ProfileBulkUpload() {
             errors.push("Personal Mail ID must be @gmail.com");
         }
 
+        // 22. Date of Joining (optional, but if filled must be DD/MM/YYYY)
+        const doj = String(row["date_of_joining"] || "").trim();
+        if (doj && !/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(doj)) {
+            errors.push("Date of Joining must be DD/MM/YYYY (e.g., 01/04/2023)");
+        }
+
         return errors;
     };
 
@@ -186,7 +192,7 @@ export default function ProfileBulkUpload() {
             "pan card", "pf no", "education", "Specialization", "blood group",
             "bank name", "account number", "employee type", "current address",
             "permanent address", "city", "state", "country", "pincode",
-            "gender", "personal mail id"
+            "gender", "personal mail id", "", "date_of_joining"
         ];
 
         const csvContent = headers.join(",") + "\n";
@@ -304,7 +310,7 @@ export default function ProfileBulkUpload() {
                             Click to upload Profiles CSV
                         </p>
                         <p className="text-sm text-slate-400 mt-2">
-                            Supports A to Z column order (Employee ID to Personal Mail ID)
+                            Supports A to AB column order (Employee ID → Personal Mail ID → Date of Joining)
                         </p>
                         <input
                             type="file"

@@ -53,8 +53,7 @@ export default function EmployeeFinancialDetails() {
 
       // Convert financial fields to numbers first, then strings for inputs
       const numericFields = [
-        "workingDays", "paidDays", "lopDays", "totalLeaves", "leavesAvailed",
-        "leavesUsed", "remainingPaidLeaves", "basic", "hra", "otherAllowance",
+        "workingDays", "paidDays", "lopDays", "basic", "hra", "otherAllowance",
         "specialPay", "incentive", "tds", "otherDeductions", "netPay"
       ];
 
@@ -95,10 +94,6 @@ export default function EmployeeFinancialDetails() {
         "workingDays",
         "paidDays",
         "lopDays",
-        "totalLeaves",
-        "leavesAvailed",
-        "leavesUsed",
-        "remainingPaidLeaves",
         "basic",
         "hra",
         "otherAllowance",
@@ -256,10 +251,6 @@ export default function EmployeeFinancialDetails() {
               <Field label="Working Days" keyName="workingDays" />
               <Field label="Paid Days" keyName="paidDays" />
               <Field label="LOP Days" keyName="lopDays" />
-              <Field label="Total Leaves" keyName="totalLeaves" />
-              <Field label="Leaves Availed" keyName="leavesAvailed" />
-              <Field label="Leaves Used" keyName="leavesUsed" />
-              <Field label="Balance Leaves" keyName="remainingPaidLeaves" />
             </div>
           </section>
 

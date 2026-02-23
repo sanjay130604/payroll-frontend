@@ -32,11 +32,7 @@ function CreatePayrollModal({ open, onClose }) {
     firstName: "",
     lastName: "",
     workingDays: "",
-    leavesAvailed: "",
-    leavesUsed: "",
-    totalLeaves: "",
     paidDays: "",
-    remainingPaidLeaves: "",
     basic: "",
     hra: "",
     otherAllowance: "",
@@ -118,6 +114,7 @@ function CreatePayrollModal({ open, onClose }) {
           employeeId: user.employeeId || "",
           firstName: user.firstName,
           lastName: user.lastName,
+          dateOfJoining: user.dateOfJoining || "",
           basic: totalBasic || "",
           hra: hra || "",
           tds: tds || "",
@@ -224,10 +221,6 @@ function CreatePayrollModal({ open, onClose }) {
     if (!isNum(form.workingDays)) return alert("Working Days must be a number");
     if (!isNum(form.paidDays)) return alert("Paid Days must be a number");
     if (!isNum(form.lopDays)) return alert("LOP Days must be a number");
-    if (!isNum(form.leavesAvailed)) return alert("Leaves Availed must be a number");
-    if (!isNum(form.leavesUsed)) return alert("Leaves Used must be a number");
-    if (!isNum(form.totalLeaves)) return alert("Total Leaves must be a number");
-    if (!isNum(form.remainingPaidLeaves)) return alert("Balance Leaves must be a number");
 
     if (!isNum(form.basic)) return alert("Basic Salary must be a number");
     if (!isNum(form.hra)) return alert("HRA must be a number");
@@ -355,10 +348,6 @@ function CreatePayrollModal({ open, onClose }) {
           {input("workingDays", "Working Days")}
           {input("paidDays", "Paid Days")}
           {input("lopDays", "LOP Days")}
-          {input("leavesAvailed", "Leaves Availed")}
-          {input("leavesUsed", "Leaves Used")}
-          {input("totalLeaves", "Total Leaves")}
-          {input("remainingPaidLeaves", "Balance Leaves")}
 
           <div className="col-span-3 h-px bg-slate-100 my-2"></div>
           <h4 className="col-span-3 text-sm font-bold text-slate-800 flex items-center gap-2">

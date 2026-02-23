@@ -107,8 +107,8 @@ export default function FinanceBulkUpload() {
 
       const headers = [
         "Salary Month", "Employee Mail id", "Employee ID", "frist name", "last name",
-        "No of Working Days", "Leaves Availed", "Leaves Used", "Total Leaves", "Pay Days",
-        "remaining Paid leave", "Other Allowance", "Special Pay", "lop days", "Incentive"
+        "No of Working Days", "Pay Days",
+        "Other Allowance", "Special Pay", "lop days"
       ];
 
       // Current Month as default (e.g., 2026-02)
@@ -127,24 +127,19 @@ export default function FinanceBulkUpload() {
             emp.firstName || "",
             emp.lastName || "",
             emp.workingDays || "30",
-            emp.leavesAvailed || "0",
-            emp.leavesUsed || "0",
-            emp.totalLeaves || "0",
             emp.paidDays || "30",
-            emp.remainingPaidLeaves || "0",
             emp.otherAllowance || "0",
             emp.specialPay || "0",
-            emp.lopDays || "0",
-            "0" // Incentive default
+            emp.lopDays || "0"
           ];
           csvContent += row.map(f => `"${String(f).replace(/"/g, '""')}"`).join(",") + "\n";
         });
       } else {
         // Fallback sample row if no data
         const sampleRow = [
-          currentMonth, "employee@gmail.com", "VTAB001", "John", "Doe",
-          "30", "0", "0", "0", "30",
-          "0", "0", "0", "0", "0"
+          currentMonth, "employee@gmail.com", "VTAB001", "First", "Last",
+          "30", "30",
+          "0", "0", "0"
         ];
         csvContent += sampleRow.join(",") + "\n";
       }

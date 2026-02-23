@@ -1,47 +1,20 @@
 import { useState } from "react";
 import axios from "../utils/axiosConfig";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Briefcase, CreditCard, MapPin, X, Save } from "lucide-react";
+import { X, Save } from "lucide-react";
 
-/* ================= OPTIONS ================= */
-
-const BLOOD_GROUPS = ["A+", "A−", "B+", "B−", "AB+", "AB−", "O+", "O−", "Others"];
-
-const EMPLOYEE_TYPES = [
-    "Full-Time", "Part-Time", "Contract", "Temporary",
-    "Intern", "Trainee", "Permanent"
-];
-
-const EDUCATION_LIST = [
-    "Higher Secondary", "Diploma", "UG", "PG",
-    "BSc", "MSc", "BTech", "MTech", "BCA", "BA", "MA"
-];
-
-const SPECIALIZATIONS = [
-    "Computer Science", "Information Technology", "Software Engineering",
-    "Data Science", "Artificial Intelligence", "Machine Learning",
-    "Cyber Security", "Cloud Computing", "DevOps Engineering",
-    "Full Stack Development", "Other"
-];
-
-const GENDER_OPTIONS = ["Male", "Female", "Other"];
-
-const COUNTRIES = ["India", "USA", "UK", "Canada", "Australia"];
-
-const STATES_BY_COUNTRY = {
-    India: [
-        "Tamil Nadu", "Kerala", "Karnataka", "Andhra Pradesh", "Telangana",
-        "Maharashtra", "Delhi", "Gujarat", "Rajasthan", "Punjab", "West Bengal"
-    ],
-    USA: ["California", "Texas", "Florida", "New York"],
-    UK: ["England", "Scotland", "Wales"],
-    Canada: ["Ontario", "Quebec", "British Columbia"],
-    Australia: ["New South Wales", "Victoria", "Queensland"]
-};
+import PersonalInfoSection from "./PersonalInfoSection";
+import OfficialDetailsSection from "./OfficialDetailsSection";
+import BankIdentitySection from "./BankIdentitySection";
+import AddressDetailsSection from "./AddressDetailsSection";
 
 export default function ProfileModal({ employee, onClose, onSaved }) {
     const [form, setForm] = useState({ ...employee, otherSpecialization: "" });
     const [edit, setEdit] = useState(false);
+
+    const handleFieldChange = (key, value) => {
+        setForm(prev => ({ ...prev, [key]: value }));
+    };
 
     /* ================= SAVE ================= */
     const save = async () => {
@@ -57,7 +30,6 @@ export default function ProfileModal({ employee, onClose, onSaved }) {
             return true;
         };
 
-        // Required Fields Validation (User Requested)
         if (!validate(updates["gender"], "Gender")) return;
         if (!validate(updates["blood group"], "Blood Group")) return;
         if (!validate(updates["employee type"], "Employee Type")) return;
@@ -67,7 +39,6 @@ export default function ProfileModal({ employee, onClose, onSaved }) {
         if (!validate(updates["country"], "Country")) return;
         if (!validate(updates["state"], "State")) return;
 
-        // Existing checks
         const dobRegex = /^\d{2}\/\d{2}\/\d{4}$/;
         const phoneRegex = /^\d{10}$/;
         const emailRegex = /@/;
@@ -77,7 +48,6 @@ export default function ProfileModal({ employee, onClose, onSaved }) {
 
         if (!dobRegex.test(updates["dob"])) { alert("Date of Birth must be in DD/MM/YYYY format (e.g., 13/06/2004)"); return; }
 
-        // Age Validation (18+)
         const [d, m, y] = updates["dob"].split("/").map(Number);
         const dobDate = new Date(y, m - 1, d);
         const today = new Date();
@@ -88,13 +58,17 @@ export default function ProfileModal({ employee, onClose, onSaved }) {
         }
         if (age < 18) { alert("Employee must be at least 18 years old"); return; }
 
+        if (updates["date_of_joining"] && !dobRegex.test(updates["date_of_joining"])) {
+            alert("Date of Joining must be in DD/MM/YYYY format (e.g., 01/04/2023)");
+            return;
+        }
+
         if (!phoneRegex.test(updates["phone"])) { alert("Phone Number must be exactly 10 digits"); return; }
         if (countWords(updates["father name"]) < 2) { alert("Father Name must be at least 2 words"); return; }
         if (countWords(updates["mother name"]) < 2) { alert("Mother Name must be at least 2 words"); return; }
         if (!emailRegex.test(updates["personal mail id"])) { alert("Personal Email must be a valid email address"); return; }
         if (countWords(updates["bank name"]) < 2) { alert("Bank Name must be at least 2 words"); return; }
 
-        // Address & City (Min 3 chars)
         if (!updates["current address"] || updates["current address"].trim().length < 3) { alert("Current Address must be at least 3 characters"); return; }
         if (!updates["permanent address"] || updates["permanent address"].trim().length < 3) { alert("Permanent Address must be at least 3 characters"); return; }
         if (!updates["city"] || updates["city"].trim().length < 3) { alert("City must be at least 3 characters"); return; }
@@ -130,48 +104,6 @@ export default function ProfileModal({ employee, onClose, onSaved }) {
         }
     };
 
-    /* ================= UI HELPERS ================= */
-
-    const view = (v) => (
-        <div className="mt-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-700 min-h-[42px] flex items-center">
-            {v || <span className="text-slate-400 italic">Not set</span>}
-        </div>
-    );
-
-    const input = (k, l, readOnly = false) => (
-        <div>
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block ml-1">{l}</label>
-            {edit && !readOnly
-                ? <input
-                    value={form[k] || ""}
-                    onChange={e => setForm({ ...form, [k]: e.target.value })}
-                    className="mt-1 w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-slate-800" />
-                : view(form[k])
-            }
-        </div>
-    );
-
-    const select = (k, l, o) => (
-        <div>
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block ml-1">{l}</label>
-            {edit
-                ? <div className="relative mt-1">
-                    <select
-                        value={form[k] || ""}
-                        onChange={e => setForm({ ...form, [k]: e.target.value })}
-                        className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-slate-800 appearance-none bg-white">
-                        <option value="">Select Option</option>
-                        {o.map(v => <option key={v} value={v}>{v}</option>)}
-                    </select>
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                        <span className="text-[10px]">▼</span>
-                    </div>
-                </div>
-                : view(form[k])
-            }
-        </div>
-    );
-
     return (
         <AnimatePresence>
             <motion.div
@@ -186,7 +118,6 @@ export default function ProfileModal({ employee, onClose, onSaved }) {
                     exit={{ scale: 0.95, opacity: 0, y: 20 }}
                     className="bg-white max-w-5xl w-full rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
                 >
-
                     {/* HEADER */}
                     <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10">
                         <div className="flex items-center gap-4">
@@ -210,105 +141,10 @@ export default function ProfileModal({ employee, onClose, onSaved }) {
 
                     <div className="flex-1 overflow-y-auto p-8 bg-slate-50/50">
                         <div className="space-y-8 max-w-4xl mx-auto">
-
-                            {/* PERSONAL */}
-                            <section className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                                    <User className="text-primary-500" size={20} />
-                                    Personal Information
-                                </h3>
-                                <div className="grid md:grid-cols-2 gap-x-6 gap-y-5">
-                                    {input("frist name", "First Name", true)}
-                                    {input("last name", "Last Name", true)}
-                                    {select("gender", "Gender", GENDER_OPTIONS)}
-                                    {input("dob", "Date of Birth")}
-                                    {input("phone", "Phone Number")}
-                                    {input("father name", "Father Name")}
-                                    {input("mother name", "Mother Name")}
-                                    {select("blood group", "Blood Group", BLOOD_GROUPS)}
-                                </div>
-                            </section>
-
-                            {/* OFFICIAL */}
-                            <section className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                                    <Briefcase className="text-orange-500" size={20} />
-                                    Official Details
-                                </h3>
-                                <div className="grid md:grid-cols-2 gap-x-6 gap-y-5">
-                                    {input("designation", "Designation")}
-                                    {input("company mail id", "Company Email", true)}
-                                    {input("personal mail id", "Personal Email")}
-                                    {select("employee type", "Employee Type", EMPLOYEE_TYPES)}
-                                    {select("education", "Education", EDUCATION_LIST)}
-                                    {select("Specialization", "Specialization", SPECIALIZATIONS)}
-
-                                    {edit && form["Specialization"] === "Other" &&
-                                        input("otherSpecialization", "Specify Specialization")}
-                                </div>
-                            </section>
-
-                            {/* BANK */}
-                            <section className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                                    <CreditCard className="text-emerald-500" size={20} />
-                                    Banking & Identity
-                                </h3>
-                                <div className="grid md:grid-cols-2 gap-x-6 gap-y-5">
-                                    {input("bank name", "Bank Name")}
-                                    {input("account number", "Account Number")}
-                                    {input("pf no", "PF Number")}
-                                    {input("pan card", "PAN Card")}
-                                    {input("aadhaar card", "Aadhaar Card")}
-                                </div>
-                            </section>
-
-                            {/* ADDRESS */}
-                            <section className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                                    <MapPin className="text-red-500" size={20} />
-                                    Address Details
-                                </h3>
-                                <div className="grid md:grid-cols-2 gap-x-6 gap-y-5">
-                                    <div className="md:col-span-2">
-                                        {input("current address", "Current Address")}
-                                    </div>
-                                    <div className="md:col-span-2">
-                                        {input("permanent address", "Permanent Address")}
-                                    </div>
-                                    {input("city", "City")}
-
-                                    {/* COUNTRY */}
-                                    {select("country", "Country", COUNTRIES)}
-
-                                    {/* STATE (DEPENDENT) */}
-                                    <div>
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block ml-1">State</label>
-                                        {edit ? (
-                                            <div className="relative mt-1">
-                                                <select
-                                                    value={form.state || ""}
-                                                    onChange={e =>
-                                                        setForm({ ...form, state: e.target.value })
-                                                    }
-                                                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-slate-800 appearance-none bg-white"
-                                                    disabled={!form.country}
-                                                >
-                                                    <option value="">Select State</option>
-                                                    {(STATES_BY_COUNTRY[form.country] || []).map(s =>
-                                                        <option key={s} value={s}>{s}</option>
-                                                    )}
-                                                </select>
-                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                                                    <span className="text-[10px]">▼</span>
-                                                </div>
-                                            </div>
-                                        ) : view(form.state)}
-                                    </div>
-
-                                    {input("pincode", "Pincode")}
-                                </div>
-                            </section>
+                            <PersonalInfoSection form={form} onChange={handleFieldChange} edit={edit} />
+                            <OfficialDetailsSection form={form} onChange={handleFieldChange} edit={edit} />
+                            <BankIdentitySection form={form} onChange={handleFieldChange} edit={edit} />
+                            <AddressDetailsSection form={form} onChange={handleFieldChange} edit={edit} />
                         </div>
                     </div>
 
@@ -340,7 +176,6 @@ export default function ProfileModal({ employee, onClose, onSaved }) {
                             )
                         }
                     </div>
-
                 </motion.div>
             </motion.div>
         </AnimatePresence>

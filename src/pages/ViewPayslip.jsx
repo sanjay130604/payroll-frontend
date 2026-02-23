@@ -125,25 +125,31 @@ export default function ViewPayslip() {
       <div className="bg-white max-w-5xl mx-auto rounded-2xl shadow border p-6 md:p-10">
 
         {/* HEADER */}
-        <div className="mb-10">
-          <h1 className="text-3xl font-extrabold text-slate-800 mb-2">
-            Payslip – <span className="text-indigo-600">{payPeriod}</span>
-          </h1>
-          <p className="text-slate-500 font-medium">
-            {d.fullName || `${d.firstName} ${d.lastName}`} · {d.employeeId}
-          </p>
-          <p className="text-sm text-slate-400 mt-1 flex items-center gap-2">
-            <Calendar size={14} /> {d.email}
-          </p>
+        <div className="mb-10 flex flex-col md:flex-row justify-between items-start gap-4">
+          <div>
+            <h1 className="text-3xl font-extrabold text-slate-800 mb-2">
+              Payslip – <span className="text-indigo-600">{payPeriod}</span>
+            </h1>
+            <p className="text-slate-600 font-semibold text-lg">
+              {d.fullName || `${d.firstName} ${d.lastName}`}
+            </p>
+            <p className="text-slate-500 font-medium">
+              Employee ID: {d.employeeId}
+            </p>
+            <p className="text-sm text-slate-400 mt-1 flex items-center gap-2">
+              <Calendar size={14} /> {d.email}
+            </p>
+          </div>
+
         </div>
 
         {/* ATTENDANCE */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
           {[
             ["Working Days", d.workingDays],
             ["Paid Days", d.paidDays],
             ["LOP Days", d.lopDays || 0],
-            ["Total Leaves", d.totalLeaves || 0]
+            ["Leaves Used", d.leavesUsed || 0]
           ].map(([label, value]) => (
             <div key={label} className="bg-slate-50 p-4 rounded-xl text-center border">
               <p className="text-xs uppercase font-bold text-slate-400 mb-1">{label}</p>
