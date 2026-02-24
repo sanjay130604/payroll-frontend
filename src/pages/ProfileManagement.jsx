@@ -3,7 +3,7 @@ import axios from "../utils/axiosConfig";
 
 import ProfileModal from "../components/ProfileModal";
 import { motion } from "framer-motion";
-import { Upload, User, MapPin, Phone, Briefcase } from "lucide-react";
+import { Upload, User, MapPin, Phone, Briefcase, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function ProfileManagement() {
@@ -49,6 +49,32 @@ export default function ProfileManagement() {
       console.error("Failed to fetch profiles", err);
       setEmployees([]);
       setFilteredEmployees([]);
+    }
+  };
+
+  /* ================= DELETE PROFILE (USER) ================= */
+  const handleRemove = async (e, employeeId) => {
+    e.stopPropagation();
+    if (!window.confirm("Are you sure? This will permanently delete the user and their profile across all modules.")) return;
+
+    try {
+      // First, get the row number of the user in the "user details" sheet
+      const usersRes = await axios.get("/api/users/all");
+      if (usersRes.data.success) {
+        const userList = usersRes.data.users || [];
+        const userToDelete = userList.find(u => u.employeeId === employeeId);
+
+        if (userToDelete && userToDelete.row) {
+          await axios.post("/api/users/delete", { row: userToDelete.row });
+          // Re-fetch profiles after successful deletion
+          fetchProfiles();
+        } else {
+          alert("Could not find user row to delete.");
+        }
+      }
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      alert("An error occurred while deleting the user.");
     }
   };
 
@@ -136,6 +162,13 @@ export default function ProfileManagement() {
                       </p>
                     </div>
                   </div>
+                  <button
+                    onClick={(event) => handleRemove(event, e["employeeld"] || e["Employee ID"])}
+                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                    title="Delete User & Profile"
+                  >
+                    <Trash2 size={18} />
+                  </button>
                 </div>
 
                 <div className="space-y-2.5">
