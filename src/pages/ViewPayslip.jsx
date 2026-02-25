@@ -14,6 +14,7 @@ export default function ViewPayslip() {
 
   const [d, setD] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [sendingMail, setSendingMail] = useState(false);
 
   /* ================= FETCH PAYSLIP ================= */
   useEffect(() => {
@@ -94,6 +95,42 @@ export default function ViewPayslip() {
     year: "numeric"
   });
 
+  const handleDownloadAndSendMail = async () => {
+    try {
+      setSendingMail(true);
+      // Automatically download PDF
+      window.open(
+        `${BASE_URL}/api/finance/payslip-pdf?email=${email}&month=${month}`,
+        "_blank"
+      );
+
+      // Get the admin's logged-in email from JWT stored in localStorage
+      let adminEmail = "";
+      const token = localStorage.getItem("adminToken");
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split(".")[1]));
+          adminEmail = payload.email || "";
+        } catch (e) {
+          console.warn("Could not decode token:", e);
+        }
+      }
+
+      // Send Email — pass adminEmail so backend sets it as reply-to
+      const res = await axios.post("/api/finance/send-payslip-email", { email, month, adminEmail });
+      if (res.data?.success) {
+        alert("Email sent successfully!");
+      } else {
+        alert("Failed to send email");
+      }
+    } catch (err) {
+      console.error("Error sending mail:", err);
+      alert("Error sending email. Please try again.");
+    } finally {
+      setSendingMail(false);
+    }
+  };
+
   /* ================= UI ================= */
   return (
     <div className="min-h-screen bg-slate-50 p-4 md:p-10">
@@ -107,18 +144,33 @@ export default function ViewPayslip() {
           <ChevronLeft size={18} /> Back
         </button>
 
-        <button
-          onClick={() =>
-            window.open(
-              `${BASE_URL}/api/finance/payslip-pdf?email=${email}&month=${month}`,
-              "_blank"
-            )
-          }
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl flex items-center gap-2 shadow"
-        >
-          <Download size={18} />
-          Download PDF
-        </button>
+        <div className="flex gap-4">
+          <button
+            onClick={() =>
+              window.open(
+                `${BASE_URL}/api/finance/payslip-pdf?email=${email}&month=${month}`,
+                "_blank"
+              )
+            }
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl flex items-center gap-2 shadow"
+          >
+            <Download size={18} />
+            Download PDF
+          </button>
+
+          <button
+            onClick={handleDownloadAndSendMail}
+            disabled={sendingMail}
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl flex items-center gap-2 shadow disabled:opacity-50"
+          >
+            {sendingMail ? (
+              <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Download size={18} />
+            )}
+            Download PDF & Send Mail
+          </button>
+        </div>
       </div>
 
       {/* PAYSLIP CARD */}
